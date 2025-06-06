@@ -1,7 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
+
 
 #define TAM_TABULEIRO 10
 #define TAM_NAVIO 3
+#define TAM_HABILIDADE 5
 
 int main() {
     int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO] = {0}; // inicializa com 0 (água)
@@ -78,6 +81,76 @@ int main() {
         }
         tabuleiro[linha_d4 + i][coluna_d4 - i] = navio_diagonal[i];
     }
+    // Construção das Matrizes de Habilidade 
+
+    int cone[TAM_HABILIDADE][TAM_HABILIDADE] = {0};
+    int cruz[TAM_HABILIDADE][TAM_HABILIDADE] = {0};
+    int octaedro[TAM_HABILIDADE][TAM_HABILIDADE] = {0};
+
+    // Construir Cone (ponta no topo, expandindo para baixo)
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            if (j >= (TAM_HABILIDADE / 2) - i && j <= (TAM_HABILIDADE / 2) + i && i <= TAM_HABILIDADE / 2) {
+                cone[i][j] = 1;
+            }
+        }
+    }
+
+    // Construir Cruz
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            if (i == TAM_HABILIDADE / 2 || j == TAM_HABILIDADE / 2) {
+                cruz[i][j] = 1;
+            }
+        }
+    }
+
+    // Construir Octaedro (forma de losango)
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+            if (abs(i - TAM_HABILIDADE / 2) + abs(j - TAM_HABILIDADE / 2) <= TAM_HABILIDADE / 2) {
+                octaedro[i][j] = 1;
+            }
+        }
+    }
+
+// Definir pontos de origem (exemplo: você pode mudar)
+    int origem_cone_linha = 1, origem_cone_coluna = 1;
+    int origem_cruz_linha = 5, origem_cruz_coluna = 5;
+    int origem_octaedro_linha = 7, origem_octaedro_coluna = 3;
+
+    // Sobrepor habilidades no tabuleiro
+
+int offset = TAM_HABILIDADE / 2; // deslocamento do centro da matriz de habilidade
+
+// Função de sobreposição reutilizável:
+
+void sobreporHabilidade(int habilidade[TAM_HABILIDADE][TAM_HABILIDADE], int origem_linha, int origem_coluna) {
+    for (int i = 0; i < TAM_HABILIDADE; i++) {
+        for (int j = 0; j < TAM_HABILIDADE; j++) {
+
+            // Posição correspondente no tabuleiro
+            int tab_linha = origem_linha - offset + i;
+            int tab_coluna = origem_coluna - offset + j;
+
+            // Verificar se está dentro dos limites do tabuleiro
+            if (tab_linha >= 0 && tab_linha < TAM_TABULEIRO &&
+                tab_coluna >= 0 && tab_coluna < TAM_TABULEIRO) {
+
+                // Se a célula da habilidade for 1 e o tabuleiro tiver água (0), marca como 5
+                if (habilidade[i][j] == 1 && tabuleiro[tab_linha][tab_coluna] == 0) {
+                    tabuleiro[tab_linha][tab_coluna] = 5;
+                }
+            }
+        }
+    }
+}
+
+// Chamar a função para cada habilidade
+sobreporHabilidade(cone, origem_cone_linha, origem_cone_coluna);
+sobreporHabilidade(cruz, origem_cruz_linha, origem_cruz_coluna);
+sobreporHabilidade(octaedro, origem_octaedro_linha, origem_octaedro_coluna);
+
 
     // Exibe o tabuleiro
     printf("\nTabuleiro:\n\n");
